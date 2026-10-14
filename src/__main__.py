@@ -1,6 +1,7 @@
 import argparse
 import sys
 from typing import Sequence
+from .loading import load_functions, load_prompts
 
 DEFAULT_FUNCTIONS = "data/input/functions_definition.json"
 DEFAULT_INPUT = "data/input/function_calling_tests.json"
@@ -8,14 +9,6 @@ DEFAULT_OUTPUT = "data/output/function_calls.json"
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    """Parse command line arguments.
-
-    Args:
-        argv: Arguments to parse, or None to use ``sys.argv``.
-
-    Returns:
-        The parsed arguments.
-    """
     parser = argparse.ArgumentParser(
         prog="python -m src",
         description="Translate prompts into function calls.",
@@ -39,18 +32,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run the program.
-
-    Args:
-        argv: Arguments to parse, or None to use ``sys.argv``.
-
-    Returns:
-        The process exit code.
-    """
     args = parse_args(argv)
-    print(f"functions: {args.functions_definition}")
-    print(f"input:     {args.input}")
-    print(f"output:    {args.output}")
+    try:
+        functions = load_functions(args.functions_definition)
+        prompts = load_prompts(args.input)
+    except ValueError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
+    print(f"Loaded {len(functions)} functions and {len(prompts)} prompts.")
     return 0
 
 
